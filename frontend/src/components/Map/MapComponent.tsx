@@ -1,8 +1,8 @@
 import React, { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import { GeoJSONFeatureCollection, TerritoryHistory } from '../../types';
-import { neighborBordersGeoJSON } from '../../data/authenticBorders';
-import { ukraineBorderGeoJSON, tacticalCityLabels } from '../../data/bordersAndCities';
+import { ukraineBorderGeoJSON, neighborBordersGeoJSON } from '../../data/authenticBorders';
+import { tacticalCityLabels } from '../../data/bordersAndCities';
 
 interface MapComponentProps {
   features: GeoJSONFeatureCollection;
@@ -184,6 +184,27 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       map.addSource('ukraine-border-source', {
         type: 'geojson',
         data: ukraineBorderGeoJSON as any,
+      });
+
+      map.addLayer({
+        id: 'ukraine-sovereign-fill',
+        type: 'fill',
+        source: 'ukraine-border-source',
+        paint: {
+          'fill-color': '#244577',
+          'fill-opacity': 0.38,
+        },
+      });
+
+      map.addLayer({
+        id: 'ukraine-oblast-borders-line',
+        type: 'line',
+        source: 'ukraine-border-source',
+        paint: {
+          'line-color': '#3b6bb8',
+          'line-width': 1.0,
+          'line-opacity': 0.55,
+        },
       });
 
       map.addLayer({
@@ -376,7 +397,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       map.on('mouseleave', 'kml-points-circle', () => {
         map.getCanvas().style.cursor = '';
       });
-      
+
       setMapLoaded(true);
     });
 
@@ -445,6 +466,10 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     if (map.getLayer('ukraine-state-border-line')) {
       const bordersVisible = visibleBaseLayers.borders !== false;
       map.setLayoutProperty('ukraine-state-border-line', 'visibility', bordersVisible ? 'visible' : 'none');
+      map.setLayoutProperty('ukraine-sovereign-fill', 'visibility', bordersVisible ? 'visible' : 'none');
+      if (map.getLayer('ukraine-oblast-borders-line')) {
+        map.setLayoutProperty('ukraine-oblast-borders-line', 'visibility', bordersVisible ? 'visible' : 'none');
+      }
       map.setLayoutProperty('neighbors-line', 'visibility', bordersVisible ? 'visible' : 'none');
     }
   }, [visibleFolders, visibleBaseLayers, mapLoaded]);
