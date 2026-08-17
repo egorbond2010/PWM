@@ -229,6 +229,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
             ['has', 'fill_opacity'], ['get', 'fill_opacity'],
             0.55
           ],
+          'fill-antialias': true,
         },
       });
 
@@ -236,18 +237,18 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         id: 'kml-polygons-line',
         type: 'line',
         source: 'kml-features-source',
-        filter: ['all', ['in', ['geometry-type'], ['literal', ['Polygon', 'MultiPolygon', 'LineString']]], ['!=', ['get', 'id'], 'ua-sovereign-1991']],
+        filter: ['all', ['==', ['geometry-type'], 'LineString'], ['!=', ['get', 'id'], 'ua-sovereign-1991']],
         paint: {
           'line-color': [
             'case',
             ['has', 'color_hex'], ['get', 'color_hex'],
             '#ef4444'
           ],
-          'line-width': 1.8,
+          'line-width': 1.6,
           'line-opacity': [
             'case',
             ['has', 'stroke_opacity'], ['get', 'stroke_opacity'],
-            0.90
+            0.85
           ],
         },
       });
@@ -449,7 +450,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
         const filterExp: any = ['match', ['get', 'folder'], activeFolders, true, false];
         map.setFilter('kml-polygons-fill', ['all', ['in', ['geometry-type'], ['literal', ['Polygon', 'MultiPolygon']]], ['!=', ['get', 'id'], 'ua-sovereign-1991'], filterExp]);
-        map.setFilter('kml-polygons-line', ['all', ['in', ['geometry-type'], ['literal', ['Polygon', 'MultiPolygon', 'LineString']]], ['!=', ['get', 'id'], 'ua-sovereign-1991'], filterExp]);
+        map.setFilter('kml-polygons-line', ['all', ['==', ['geometry-type'], 'LineString'], ['!=', ['get', 'id'], 'ua-sovereign-1991'], filterExp]);
         map.setFilter('kml-points-circle', ['all', ['==', ['geometry-type'], 'Point'], filterExp]);
       }
     }
