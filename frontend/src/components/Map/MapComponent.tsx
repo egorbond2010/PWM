@@ -1,6 +1,7 @@
 import React, { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import { GeoJSONFeatureCollection, TerritoryHistory } from '../../types';
+import { ukraineBorderGeoJSON, neighborBordersGeoJSON } from '../../data/authenticBorders';
 import { tacticalCityLabels } from '../../data/bordersAndCities';
 
 interface MapComponentProps {
@@ -163,6 +164,61 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     });
 
     map.on('load', () => {
+      map.addSource('neighbors-source', {
+        type: 'geojson',
+        data: neighborBordersGeoJSON as any,
+      });
+
+      map.addLayer({
+        id: 'neighbors-line',
+        type: 'line',
+        source: 'neighbors-source',
+        paint: {
+          'line-color': '#94a3b8',
+          'line-width': 1.2,
+          'line-dasharray': [3, 3],
+          'line-opacity': 0.60,
+        },
+      });
+
+      map.addSource('ukraine-border-source', {
+        type: 'geojson',
+        data: ukraineBorderGeoJSON as any,
+      });
+
+      map.addLayer({
+        id: 'ukraine-sovereign-fill',
+        type: 'fill',
+        source: 'ukraine-border-source',
+        paint: {
+          'fill-color': '#244577',
+          'fill-opacity': 0.38,
+        },
+      });
+
+      map.addLayer({
+        id: 'ukraine-oblast-borders-line',
+        type: 'line',
+        source: 'ukraine-border-source',
+        paint: {
+          'line-color': '#3b6bb8',
+          'line-width': 1.0,
+          'line-opacity': 0.55,
+        },
+      });
+
+      map.addLayer({
+        id: 'ukraine-state-border-line',
+        type: 'line',
+        source: 'ukraine-border-source',
+        paint: {
+          'line-color': '#ffffff',
+          'line-width': 2.4,
+          'line-dasharray': [4, 2],
+          'line-opacity': 0.95,
+        },
+      });
+
       map.addSource('kml-features-source', {
         type: 'geojson',
         data: features as any,
@@ -405,6 +461,16 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       const labelsVisible = visibleBaseLayers.cities !== false;
       map.setLayoutProperty('places-labels-layer', 'visibility', labelsVisible ? 'visible' : 'none');
       map.setLayoutProperty('carto-labels-layer', 'visibility', labelsVisible ? 'visible' : 'none');
+    }
+
+    if (map.getLayer('ukraine-state-border-line')) {
+      const bordersVisible = visibleBaseLayers.borders !== false;
+      map.setLayoutProperty('ukraine-state-border-line', 'visibility', bordersVisible ? 'visible' : 'none');
+      map.setLayoutProperty('ukraine-sovereign-fill', 'visibility', bordersVisible ? 'visible' : 'none');
+      if (map.getLayer('ukraine-oblast-borders-line')) {
+        map.setLayoutProperty('ukraine-oblast-borders-line', 'visibility', bordersVisible ? 'visible' : 'none');
+      }
+      map.setLayoutProperty('neighbors-line', 'visibility', bordersVisible ? 'visible' : 'none');
     }
   }, [visibleFolders, visibleBaseLayers, mapLoaded]);
 
