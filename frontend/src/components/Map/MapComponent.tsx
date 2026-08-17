@@ -85,12 +85,13 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         'carto-labels': {
           type: 'raster',
           tiles: [
-            'https://a.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}@2x.png',
-            'https://b.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}@2x.png',
-            'https://c.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}@2x.png',
-            'https://d.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}@2x.png',
+            'https://a.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}.png',
+            'https://b.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}.png',
+            'https://c.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}.png',
+            'https://d.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}.png',
           ],
           tileSize: 256,
+          maxzoom: 19,
         },
       },
       layers: [
@@ -134,8 +135,8 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       zoom: DEFAULT_ZOOM,
       pitch: 0,
       bearing: 0,
-      fadeDuration: 50,
-      maxTileCacheSize: 100,
+      fadeDuration: 0,
+      maxTileCacheSize: 150,
       trackResize: true,
     });
 
