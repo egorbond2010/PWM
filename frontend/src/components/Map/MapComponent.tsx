@@ -191,8 +191,8 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         type: 'fill',
         source: 'ukraine-border-source',
         paint: {
-          'fill-color': '#1d4ed8',
-          'fill-opacity': 0.14,
+          'fill-color': '#1e3a8a',
+          'fill-opacity': 0.07,
         },
       });
 
@@ -202,9 +202,9 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         source: 'ukraine-border-source',
         paint: {
           'line-color': '#ffffff',
-          'line-width': 2.4,
+          'line-width': 2.2,
           'line-dasharray': [4, 2],
-          'line-opacity': 0.95,
+          'line-opacity': 0.90,
         },
       });
 
@@ -227,9 +227,9 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           ],
           'fill-opacity': [
             'case',
-            ['==', ['get', 'folder'], 'Сіра зона'], 0.85,
+            ['==', ['get', 'folder'], 'Сіра зона'], 0.50,
             ['has', 'fill_opacity'], ['get', 'fill_opacity'],
-            0.55
+            0.38
           ],
           'fill-antialias': true,
         },

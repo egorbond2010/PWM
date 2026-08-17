@@ -56,7 +56,7 @@ for (let fIdx = 0; fIdx < folders.length; fIdx++) {
     const styleUrl = placemark.getElementsByTagName('styleUrl')[0]?.textContent?.trim() || '';
     
     let colorHex = extractColorFromStyleId(styleUrl);
-    let opacity = 0.50;
+    let opacity = 0.38;
     
     const lowerName = name.toLowerCase();
     const lowerDesc = desc.toLowerCase();
@@ -65,42 +65,42 @@ for (let fIdx = 0; fIdx < folders.length; fIdx++) {
                        styleUrl.includes('FFFFFF') || styleUrl.includes('gray') || styleUrl.includes('grey');
 
     if (isGreyZone) {
-      // Grey Zone (Contested / Неуточнено) -> Pure Brilliant White (#ffffff)
+      // Grey Zone (Contested / Неуточнено) -> Translucent Matte White (#ffffff with 0.50 opacity)
       colorHex = '#ffffff';
-      opacity = 0.78;
+      opacity = 0.50;
       if (!name || name === `Об'єкт ${featCounter}`) {
         name = 'Сіра зона';
       }
     } else if (folderName.includes('Території, які контролювали ЗСУ в Росії')) {
-      // Ukrainian control in Kursk/Russia -> Blue
-      colorHex = '#2563eb';
-      opacity = 0.55;
+      // Ukrainian control in Kursk/Russia -> Soft Matte Blue (#3b6bb8)
+      colorHex = '#3b6bb8';
+      opacity = 0.38;
     } else if (folderName.includes('Звільнені території')) {
-      // Liberated Ukrainian territories -> Green
-      colorHex = '#10b981';
-      opacity = 0.45;
+      // Liberated Ukrainian territories -> Natural Sage Green (#2e9e6b)
+      colorHex = '#2e9e6b';
+      opacity = 0.35;
     } else if (folderName.includes('Основна Карта') || folderName.includes('Денере')) {
-      // Russian occupied areas -> Red
-      colorHex = '#dc2626';
-      opacity = 0.55;
+      // Russian occupied areas -> Desaturated Muted Wine Red (#b83a3a)
+      colorHex = '#b83a3a';
+      opacity = 0.38;
     } else if (folderName.includes('Позиції')) {
       if (!colorHex) {
         colorHex = name.toLowerCase().includes('зсу') ? '#3b82f6' : '#ef4444';
       }
-      opacity = 0.90;
-    } else if (folderName.includes('Шар далеких ударів')) {
-      colorHex = '#f59e0b';
       opacity = 0.85;
+    } else if (folderName.includes('Шар далеких ударів')) {
+      colorHex = '#d97706';
+      opacity = 0.75;
     } else if (folderName === 'Україна') {
-      colorHex = '#1e40af';
-      opacity = 0.15;
+      colorHex = '#1e3a8a';
+      opacity = 0.08;
     } else if (folderName.includes('Міста') || folderName.includes('Райони')) {
-      if (!colorHex) colorHex = '#eab308';
-      opacity = 0.20;
+      if (!colorHex) colorHex = '#ca8a04';
+      opacity = 0.15;
     }
 
     if (!colorHex) {
-      colorHex = '#3b82f6';
+      colorHex = '#3b6bb8';
     }
 
     allFeatures.push({
@@ -112,7 +112,7 @@ for (let fIdx = 0; fIdx < folders.length; fIdx++) {
         folder: isGreyZone ? 'Сіра зона' : folderName,
         color_hex: colorHex,
         fill_opacity: opacity,
-        stroke_color: isGreyZone ? '#94a3b8' : colorHex,
+        stroke_color: isGreyZone ? '#ffffff' : colorHex,
       }
     });
   }
@@ -126,4 +126,4 @@ const finalGeoJson = {
 fs.writeFileSync(outGeoJsonPath, JSON.stringify(finalGeoJson, null, 2), 'utf8');
 fs.writeFileSync(outStatsPath, JSON.stringify(folderStats, null, 2), 'utf8');
 
-console.log(`Parsed ${allFeatures.length} features with accurate Grey Zone, ZSU & Russian colors!`);
+console.log(`Parsed ${allFeatures.length} features with desaturated translucent layer styling!`);
