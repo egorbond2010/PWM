@@ -65,9 +65,9 @@ for (let fIdx = 0; fIdx < folders.length; fIdx++) {
                        styleUrl.includes('FFFFFF') || styleUrl.includes('gray') || styleUrl.includes('grey');
 
     if (isGreyZone) {
-      // Grey Zone (Contested / Неуточнено) -> Translucent Matte White (#ffffff with 0.50 opacity)
-      colorHex = '#ffffff';
-      opacity = 0.50;
+      // Grey Zone (Contested / Неуточнено) -> Harmonious Soft Light Slate (#e2e8f0 with 0.38 opacity)
+      colorHex = '#e2e8f0';
+      opacity = 0.38;
       if (!name || name === `Об'єкт ${featCounter}`) {
         name = 'Сіра зона';
       }

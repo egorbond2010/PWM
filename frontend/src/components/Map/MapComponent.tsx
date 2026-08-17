@@ -221,13 +221,13 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         paint: {
           'fill-color': [
             'case',
-            ['==', ['get', 'folder'], 'Сіра зона'], '#ffffff',
+            ['==', ['get', 'folder'], 'Сіра зона'], '#e2e8f0',
             ['has', 'color_hex'], ['get', 'color_hex'],
             '#8b3a2b'
           ],
           'fill-opacity': [
             'case',
-            ['==', ['get', 'folder'], 'Сіра зона'], 0.50,
+            ['==', ['get', 'folder'], 'Сіра зона'], 0.38,
             ['has', 'fill_opacity'], ['get', 'fill_opacity'],
             0.38
           ],
