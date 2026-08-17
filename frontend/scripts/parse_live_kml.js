@@ -92,8 +92,8 @@ for (let fIdx = 0; fIdx < folders.length; fIdx++) {
       colorHex = '#d97706';
       opacity = 0.75;
     } else if (folderName === 'Україна') {
-      colorHex = '#1e3a8a';
-      opacity = 0.08;
+      colorHex = '#244577';
+      opacity = 0.40;
     } else if (folderName.includes('Міста') || folderName.includes('Райони')) {
       if (!colorHex) colorHex = '#ca8a04';
       opacity = 0.15;
