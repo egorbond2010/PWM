@@ -37,6 +37,7 @@ export const App: React.FC = () => {
 
   const [visibleFolders, setVisibleFolders] = useState<Record<string, boolean>>({
     'Основна Карта': true,
+    'Сіра зона': true,
     'Денере і Ленере': true,
     'Території, які контролювали ЗСУ в Росії': true,
     'Звільнені території': true,

@@ -132,6 +132,11 @@ export const Sidebar: React.FC<SidebarProps> = ({
   const renderItemIcon = (name: string, folderName: string, geomType?: string) => {
     const lower = name.toLowerCase();
 
+    if (lower.includes('сір') || lower.includes('сер') || folderName.includes('Сіра') || lower.includes('неуточн')) {
+      return (
+        <span className="w-3.5 h-3.5 border-2 border-slate-500 rounded-xs bg-slate-500/25 inline-block shrink-0" />
+      );
+    }
     if (lower.includes('окуповано')) {
       return (
         <span className="w-3.5 h-3.5 border-2 border-[#ef4444] rounded-xs bg-[#ef4444]/15 inline-block shrink-0" />

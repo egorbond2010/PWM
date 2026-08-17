@@ -51,15 +51,27 @@ for (let fIdx = 0; fIdx < folders.length; fIdx++) {
     if (!pmGeoJson.features || pmGeoJson.features.length === 0) continue;
     const feat = pmGeoJson.features[0];
     
-    const name = placemark.getElementsByTagName('name')[0]?.textContent?.trim() || `Об'єкт ${featCounter}`;
+    let name = placemark.getElementsByTagName('name')[0]?.textContent?.trim() || `Об'єкт ${featCounter}`;
     const desc = placemark.getElementsByTagName('description')[0]?.textContent?.trim() || '';
     const styleUrl = placemark.getElementsByTagName('styleUrl')[0]?.textContent?.trim() || '';
     
     let colorHex = extractColorFromStyleId(styleUrl);
     let opacity = 0.50;
     
-    // Explicit military color assignments per folder
-    if (folderName.includes('Території, які контролювали ЗСУ в Росії')) {
+    const lowerName = name.toLowerCase();
+    const lowerDesc = desc.toLowerCase();
+    const isGreyZone = lowerName.includes('сір') || lowerName.includes('сер') || 
+                       lowerDesc.includes('сіра зона') || lowerDesc.includes('серая зона') ||
+                       styleUrl.includes('FFFFFF') || styleUrl.includes('gray') || styleUrl.includes('grey');
+
+    if (isGreyZone) {
+      // Grey Zone (Contested / Неуточнено) -> Neutral Military Slate Grey (#64748b)
+      colorHex = '#64748b';
+      opacity = 0.55;
+      if (!name || name === `Об'єкт ${featCounter}`) {
+        name = 'Сіра зона';
+      }
+    } else if (folderName.includes('Території, які контролювали ЗСУ в Росії')) {
       // Ukrainian control in Kursk/Russia -> Blue
       colorHex = '#2563eb';
       opacity = 0.55;
@@ -72,9 +84,7 @@ for (let fIdx = 0; fIdx < folders.length; fIdx++) {
       colorHex = '#dc2626';
       opacity = 0.55;
     } else if (folderName.includes('Позиції')) {
-      if (colorHex) {
-        // Keep style color
-      } else {
+      if (!colorHex) {
         colorHex = name.toLowerCase().includes('зсу') ? '#3b82f6' : '#ef4444';
       }
       opacity = 0.90;
@@ -99,10 +109,10 @@ for (let fIdx = 0; fIdx < folders.length; fIdx++) {
         id: `pwm-feat-${featCounter}`,
         name,
         description: desc,
-        folder: folderName,
+        folder: isGreyZone ? 'Сіра зона' : folderName,
         color_hex: colorHex,
         fill_opacity: opacity,
-        stroke_color: colorHex,
+        stroke_color: isGreyZone ? '#94a3b8' : colorHex,
       }
     });
   }
@@ -116,4 +126,4 @@ const finalGeoJson = {
 fs.writeFileSync(outGeoJsonPath, JSON.stringify(finalGeoJson, null, 2), 'utf8');
 fs.writeFileSync(outStatsPath, JSON.stringify(folderStats, null, 2), 'utf8');
 
-console.log(`Parsed ${allFeatures.length} features with accurate ZSU & Russian colors!`);
+console.log(`Parsed ${allFeatures.length} features with accurate Grey Zone, ZSU & Russian colors!`);
