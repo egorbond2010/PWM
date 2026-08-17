@@ -85,9 +85,10 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         'carto-labels': {
           type: 'raster',
           tiles: [
-            'https://a.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}.png',
-            'https://b.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}.png',
-            'https://c.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}.png',
+            'https://a.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}@2x.png',
+            'https://b.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}@2x.png',
+            'https://c.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}@2x.png',
+            'https://d.basemaps.cartocdn.com/rastertiles/voyager_only_labels/{z}/{x}/{y}@2x.png',
           ],
           tileSize: 256,
         },
@@ -133,6 +134,9 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       zoom: DEFAULT_ZOOM,
       pitch: 0,
       bearing: 0,
+      fadeDuration: 50,
+      maxTileCacheSize: 100,
+      trackResize: true,
     });
 
     mapInstance.current = map;
@@ -273,24 +277,13 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       });
 
       map.addLayer({
-        id: 'places-labels-layer',
-        type: 'raster',
-        source: 'esri-places-labels',
-        minzoom: 4,
-        maxzoom: 19,
-        paint: {
-          'raster-opacity': 0.95,
-        },
-      });
-
-      map.addLayer({
         id: 'carto-labels-layer',
         type: 'raster',
         source: 'carto-labels',
         minzoom: 3,
         maxzoom: 19,
         paint: {
-          'raster-opacity': 0.90,
+          'raster-opacity': 0.95,
         },
       });
 
