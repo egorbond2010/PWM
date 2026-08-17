@@ -33,20 +33,25 @@ export const App: React.FC = () => {
   const [activeViewMode, setActiveViewMode] = useState<'public' | 'osint' | 'editor'>('public');
   const [isWsConnected, setIsWsConnected] = useState(false);
   const [basemapType, setBasemapType] = useState<'satellite' | 'dark' | 'streets'>('satellite');
-  const [isSidebarOpen, setIsSidebarOpen] = useState(true);
+  const [isSidebarOpen, setIsSidebarOpen] = useState(() => {
+    if (typeof window !== 'undefined') {
+      return window.innerWidth >= 768;
+    }
+    return false;
+  });
 
   const [visibleFolders, setVisibleFolders] = useState<Record<string, boolean>>({
     'Основна Карта': true,
-    'Сіра зона': true,
-    'Денере і Ленере': true,
+    'Будинки амбасадорів каналу': false,
     'Території, які контролювали ЗСУ в Росії': true,
     'Звільнені території': true,
     'Позиції, Червоне - ЗСРФ, Синє - ЗСУ': true,
     'Шар далеких ударів': true,
-    'Будинки амбасадорів каналу': false,
-    'Україна': false,
+    'Україна': true,
     '(Рекомендовано для детальності) Райони, мікрорайони, річки, адміністративі кордони': false,
     'Міста': false,
+    'Денере і Ленере': true,
+    'Сіра зона': true,
   });
 
   const [visibleBaseLayers, setVisibleBaseLayers] = useState<Record<string, boolean>>({
@@ -208,6 +213,18 @@ export const App: React.FC = () => {
             isOpen={isSidebarOpen}
             onClose={() => setIsSidebarOpen(false)}
           />
+        )}
+
+        {/* Floating Layers Button for Mobile when Sidebar is Closed */}
+        {!isSidebarOpen && !isCleanMode && (
+          <button
+            onClick={() => setIsSidebarOpen(true)}
+            className="md:hidden absolute bottom-5 left-3.5 z-20 flex items-center space-x-2 bg-[#1a73e8] hover:bg-[#1557b0] active:scale-95 text-white px-3.5 py-2 rounded-full shadow-2xl border border-white/20 text-xs font-semibold transition"
+            title="Відкрити налаштування шарів"
+          >
+            <span className="text-sm">📁</span>
+            <span>Шари карти</span>
+          </button>
         )}
 
         {/* Floating Return Button when in Clean Map Mode */}

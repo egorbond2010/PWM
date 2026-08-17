@@ -66,6 +66,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     '(Рекомендовано для детальності) Райони, мікрорайони, річки, адміністративі кордони': false,
     'Міста': false,
     'Денере і Ленере': false,
+    'Сіра зона': false,
   });
 
   const toggleFolderExpand = (folder: string) => {
@@ -83,7 +84,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
     return map;
   }, [features]);
 
-  // All known folders sorted in logical order matching PWM
+  // All known folders sorted in logical order matching PWM screenshots
   const folderOrder = [
     'Основна Карта',
     'Будинки амбасадорів каналу',
@@ -94,7 +95,8 @@ export const Sidebar: React.FC<SidebarProps> = ({
     'Україна',
     '(Рекомендовано для детальності) Райони, мікрорайони, річки, адміністративі кордони',
     'Міста',
-    'Денере і Ленере'
+    'Денере і Ленере',
+    'Сіра зона',
   ];
 
   const allFolders = useMemo(() => {
