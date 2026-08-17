@@ -1,0 +1,11 @@
+FROM golang:1.22-alpine AS builder
+WORKDIR /app
+COPY sync/go.mod ./
+COPY sync/ ./
+RUN CGO_ENABLED=0 GOOS=linux go build -o sync-daemon ./cmd/sync
+
+FROM alpine:3.19
+RUN apk --no-cache add ca-certificates
+WORKDIR /root/
+COPY --from=builder /app/sync-daemon .
+CMD ["./sync-daemon"]
