@@ -2,6 +2,7 @@ import React, { useEffect, useRef, useState } from 'react';
 import maplibregl from 'maplibre-gl';
 import { GeoJSONFeatureCollection, TerritoryHistory } from '../../types';
 import { ukraineBorderGeoJSON, neighborBordersGeoJSON } from '../../data/authenticBorders';
+import { tacticalCityLabels } from '../../data/bordersAndCities';
 
 interface MapComponentProps {
   features: GeoJSONFeatureCollection;
@@ -184,7 +185,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         source: 'ukraine-border-source',
         paint: {
           'fill-color': '#2b4b77',
-          'fill-opacity': 0.38,
+          'fill-opacity': 0,
         },
       });
 
@@ -286,7 +287,56 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         minzoom: 3,
         maxzoom: 19,
         paint: {
-          'raster-opacity': 0.95,
+          'raster-opacity': 0.70,
+        },
+      });
+
+      const ukrainianLabelsGeoJSON = {
+        type: 'FeatureCollection',
+        features: tacticalCityLabels.map((lbl, idx) => ({
+          type: 'Feature',
+          properties: {
+            id: `uk-city-${idx}`,
+            name: lbl.name,
+            type: lbl.type,
+            minZoom: lbl.minZoom || 0,
+          },
+          geometry: {
+            type: 'Point',
+            coordinates: lbl.coordinates,
+          },
+        })),
+      };
+
+      map.addSource('ukrainian-labels-source', {
+        type: 'geojson',
+        data: ukrainianLabelsGeoJSON as any,
+      });
+
+      map.addLayer({
+        id: 'ukrainian-labels-layer',
+        type: 'symbol',
+        source: 'ukrainian-labels-source',
+        layout: {
+          'text-field': ['get', 'name'],
+          'text-size': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            4, 11,
+            7, 13,
+            10, 15,
+            14, 17,
+          ],
+          'text-anchor': 'center',
+          'text-allow-overlap': false,
+          'text-ignore-placement': false,
+        },
+        paint: {
+          'text-color': '#ffffff',
+          'text-halo-color': '#0a0d14',
+          'text-halo-width': 2.2,
+          'text-halo-blur': 0.5,
         },
       });
 

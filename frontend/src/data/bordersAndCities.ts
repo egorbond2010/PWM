@@ -212,4 +212,7 @@ export const tacticalCityLabels: MapLabel[] = [
   { name: 'Мозир', coordinates: [29.2700, 52.0500], type: 'major_city', minZoom: 0 },
   { name: 'Брест', coordinates: [23.6877, 52.0976], type: 'major_city', minZoom: 0 },
   { name: 'Клинці', coordinates: [32.2300, 52.7500], type: 'major_city', minZoom: 0 },
+
+  { name: 'ЧОРНЕ МОРЕ', coordinates: [33.50, 43.80], type: 'country', minZoom: 0 },
+  { name: 'АЗОВСЬКЕ МОРЕ', coordinates: [36.60, 46.10], type: 'country', minZoom: 0 },
 ];
