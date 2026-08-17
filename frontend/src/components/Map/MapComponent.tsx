@@ -6,6 +6,7 @@ import { ukraineBorderGeoJSON, neighborBordersGeoJSON } from '../../data/authent
 interface MapComponentProps {
   features: GeoJSONFeatureCollection;
   diffs: TerritoryHistory[];
+  selectedFeatureId?: string | null;
   onSelectFeature: (featureId: string) => void;
   visibleFolders: Record<string, boolean>;
   visibleBaseLayers: Record<string, boolean>;
@@ -20,6 +21,7 @@ const DEFAULT_ZOOM = 6.4;
 export const MapComponent: React.FC<MapComponentProps> = ({
   features,
   diffs,
+  selectedFeatureId,
   onSelectFeature,
   visibleFolders,
   visibleBaseLayers,
@@ -413,6 +415,62 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       map.setLayoutProperty('neighbors-line', 'visibility', bordersVisible ? 'visible' : 'none');
     }
   }, [visibleFolders, visibleBaseLayers, mapLoaded]);
+
+  useEffect(() => {
+    const map = mapInstance.current;
+    if (!map || !mapLoaded || !selectedFeatureId) return;
+
+    const feat = features?.features?.find((f) => f.properties?.id === selectedFeatureId);
+    if (!feat || !feat.geometry) return;
+
+    let centerLngLat: [number, number] | null = null;
+    const geom = feat.geometry;
+
+    if (geom.type === 'Point' && Array.isArray(geom.coordinates)) {
+      centerLngLat = [geom.coordinates[0], geom.coordinates[1]];
+    } else if (geom.type === 'Polygon' && Array.isArray(geom.coordinates) && geom.coordinates[0]?.length > 0) {
+      const ring = geom.coordinates[0];
+      let sumLng = 0;
+      let sumLat = 0;
+      ring.forEach((pt: any) => {
+        sumLng += pt[0];
+        sumLat += pt[1];
+      });
+      centerLngLat = [sumLng / ring.length, sumLat / ring.length];
+    } else if (geom.type === 'LineString' && Array.isArray(geom.coordinates) && geom.coordinates.length > 0) {
+      const mid = geom.coordinates[Math.floor(geom.coordinates.length / 2)];
+      centerLngLat = [mid[0], mid[1]];
+    }
+
+    if (centerLngLat) {
+      map.flyTo({
+        center: centerLngLat,
+        zoom: Math.max(map.getZoom(), 11),
+        duration: 1000,
+      });
+
+      const props = feat.properties || {};
+      const name = props.name || 'Об\'єкт карти';
+      const folder = props.folder || '';
+      const desc = props.description || '';
+
+      new maplibregl.Popup({
+        closeButton: true,
+        closeOnClick: true,
+        offset: 10,
+        className: 'pwm-map-popup',
+      })
+        .setLngLat(centerLngLat)
+        .setHTML(`
+          <div style="font-family: system-ui, -apple-system, sans-serif; color: #0f172a; padding: 4px 6px; min-width: 160px; max-width: 280px;">
+            <div style="font-weight: 700; font-size: 13px; color: #0f172a; line-height: 1.3; margin-bottom: 3px;">${name}</div>
+            ${folder ? `<div style="font-size: 11px; color: #64748b; margin-bottom: 4px;">📁 ${folder}</div>` : ''}
+            ${desc ? `<div style="font-size: 11px; color: #334155; line-height: 1.4; max-height: 160px; overflow-y: auto; padding-top: 2px;">${desc}</div>` : ''}
+          </div>
+        `)
+        .addTo(map);
+    }
+  }, [selectedFeatureId, features, mapLoaded]);
 
   useEffect(() => {
     const map = mapInstance.current;

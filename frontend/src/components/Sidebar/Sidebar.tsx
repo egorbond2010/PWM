@@ -300,20 +300,33 @@ export const Sidebar: React.FC<SidebarProps> = ({
                   {/* Real features if available */}
                   {displayedFeatures.length > 0 ? (
                     <>
-                      {displayedFeatures.slice(0, 4).map((feat) => {
+                      {displayedFeatures.slice(0, 6).map((feat) => {
                         const name = feat.properties?.name || 'Обʼєкт';
                         const geomType = feat.geometry?.type;
-                        const isSelected = selectedFeatureId === feat.properties?.id;
+                        const featId = feat.properties?.id;
+                        const isSelected = selectedFeatureId === featId;
 
                         return (
                           <div
-                            key={feat.properties?.id || name}
-                            onClick={() => onSelectFeature(feat.properties?.id)}
-                            className={`flex items-center space-x-2.5 py-1 px-1 rounded-md cursor-pointer hover:bg-slate-100 transition ${
-                              isSelected ? 'bg-blue-50 text-[#1a73e8]' : 'text-slate-700'
+                            key={featId || name}
+                            onClick={() => {
+                              if (!isVisible) {
+                                onToggleFolder(folderName);
+                              }
+                              if (featId) {
+                                onSelectFeature(featId);
+                              }
+                            }}
+                            className={`flex items-center space-x-2.5 py-1 px-1.5 rounded-lg cursor-pointer transition select-none ${
+                              isSelected
+                                ? 'bg-blue-100/70 text-[#1a73e8] font-medium'
+                                : 'text-slate-700 hover:bg-slate-100'
                             }`}
+                            title="Натисніть, щоб наблизити цей об'єкт на карті"
                           >
-                            <div className="w-3.5 h-3.5 rounded bg-[#1a73e8] flex items-center justify-center text-white shrink-0">
+                            <div className={`w-3.5 h-3.5 rounded flex items-center justify-center text-white shrink-0 transition ${
+                              isVisible ? 'bg-[#1a73e8]' : 'bg-slate-300'
+                            }`}>
                               <Check className="w-2.5 h-2.5 stroke-[3]" />
                             </div>
 
@@ -326,21 +339,25 @@ export const Sidebar: React.FC<SidebarProps> = ({
                         );
                       })}
 
-                      {totalCount > 4 && (
+                      {totalCount > 6 && (
                         <div className="text-[11px] text-slate-400 italic pl-6 pt-0.5 pb-0.5">
-                          і ще {totalCount - 4} об'єктів
+                          і ще {totalCount - 6} об'єктів
                         </div>
                       )}
                     </>
                   ) : fallbackList.length > 0 ? (
-                    /* Fallback default sample items matching screenshot */
                     <>
                       {fallbackList.map((item) => (
                         <div
                           key={item.name}
-                          className="flex items-center space-x-2.5 py-1 px-1 rounded-md cursor-pointer hover:bg-slate-100 transition text-slate-700"
+                          onClick={() => {
+                            if (!isVisible) onToggleFolder(folderName);
+                          }}
+                          className="flex items-center space-x-2.5 py-1 px-1.5 rounded-lg cursor-pointer hover:bg-slate-100 transition text-slate-700 select-none"
                         >
-                          <div className="w-3.5 h-3.5 rounded bg-[#1a73e8] flex items-center justify-center text-white shrink-0">
+                          <div className={`w-3.5 h-3.5 rounded flex items-center justify-center text-white shrink-0 transition ${
+                            isVisible ? 'bg-[#1a73e8]' : 'bg-slate-300'
+                          }`}>
                             <Check className="w-2.5 h-2.5 stroke-[3]" />
                           </div>
 

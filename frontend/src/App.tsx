@@ -172,6 +172,7 @@ export const App: React.FC = () => {
         <MapComponent
           features={mapFeatures}
           diffs={diffs}
+          selectedFeatureId={selectedFeatureId}
           onSelectFeature={handleSelectFeature}
           visibleFolders={visibleFolders}
           visibleBaseLayers={visibleBaseLayers}
