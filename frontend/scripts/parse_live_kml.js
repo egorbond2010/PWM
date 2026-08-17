@@ -17,22 +17,19 @@ const kmlText = fs.readFileSync(kmlPath, 'utf8');
 const parser = new DOMParser();
 const kmlDoc = parser.parseFromString(kmlText, 'text/xml');
 
-// Helper to extract hex color from Style or Style ID
 function extractColorFromStyleId(styleId) {
-  if (!styleId) return '#3b82f6';
-  // Check for 6-character hex code in styleId (e.g. poly-A52714, icon-1564-0288D1, poly-0F9D58)
+  if (!styleId) return null;
   const hexMatch = styleId.match(/([0-9A-Fa-f]{6})/);
   if (hexMatch) {
     return `#${hexMatch[1]}`;
   }
-  return '#3b82f6';
+  return null;
 }
 
 const folderStats = {};
 const allFeatures = [];
 let featCounter = 0;
 
-// Iterate through each Folder individually
 const folders = kmlDoc.getElementsByTagName('Folder');
 for (let fIdx = 0; fIdx < folders.length; fIdx++) {
   const folder = folders[fIdx];
@@ -45,7 +42,6 @@ for (let fIdx = 0; fIdx < folders.length; fIdx++) {
     featCounter++;
     const placemark = placemarks[pIdx];
     
-    // Parse single placemark to geojson
     const pmDoc = parser.parseFromString(
       `<kml xmlns="http://www.opengis.net/kml/2.2"><Document>${placemark.toString()}</Document></kml>`,
       'text/xml'
@@ -60,19 +56,41 @@ for (let fIdx = 0; fIdx < folders.length; fIdx++) {
     const styleUrl = placemark.getElementsByTagName('styleUrl')[0]?.textContent?.trim() || '';
     
     let colorHex = extractColorFromStyleId(styleUrl);
+    let opacity = 0.50;
     
-    // Specific folder color heuristics if style is generic
-    if (folderName.includes('Основна Карта') || folderName.includes('Денере')) {
-      if (colorHex === '#3b82f6' || colorHex === '#0288d1') colorHex = '#a52714'; // Red for Russian occupation
-    } else if (folderName.includes('Звільнені')) {
-      if (colorHex === '#3b82f6') colorHex = '#0f9d58'; // Green for liberated
+    // Explicit military color assignments per folder
+    if (folderName.includes('Території, які контролювали ЗСУ в Росії')) {
+      // Ukrainian control in Kursk/Russia -> Blue
+      colorHex = '#2563eb';
+      opacity = 0.55;
+    } else if (folderName.includes('Звільнені території')) {
+      // Liberated Ukrainian territories -> Green
+      colorHex = '#10b981';
+      opacity = 0.45;
+    } else if (folderName.includes('Основна Карта') || folderName.includes('Денере')) {
+      // Russian occupied areas -> Red
+      colorHex = '#dc2626';
+      opacity = 0.55;
+    } else if (folderName.includes('Позиції')) {
+      if (colorHex) {
+        // Keep style color
+      } else {
+        colorHex = name.toLowerCase().includes('зсу') ? '#3b82f6' : '#ef4444';
+      }
+      opacity = 0.90;
+    } else if (folderName.includes('Шар далеких ударів')) {
+      colorHex = '#f59e0b';
+      opacity = 0.85;
+    } else if (folderName === 'Україна') {
+      colorHex = '#1e40af';
+      opacity = 0.15;
+    } else if (folderName.includes('Міста') || folderName.includes('Райони')) {
+      if (!colorHex) colorHex = '#eab308';
+      opacity = 0.20;
     }
 
-    let opacity = 0.45;
-    if (folderName === 'Україна') {
-      opacity = 0.05; // Don't block map
-    } else if (folderName.includes('Міста') || folderName.includes('Райони')) {
-      opacity = 0.20;
+    if (!colorHex) {
+      colorHex = '#3b82f6';
     }
 
     allFeatures.push({
@@ -98,4 +116,4 @@ const finalGeoJson = {
 fs.writeFileSync(outGeoJsonPath, JSON.stringify(finalGeoJson, null, 2), 'utf8');
 fs.writeFileSync(outStatsPath, JSON.stringify(folderStats, null, 2), 'utf8');
 
-console.log(`Successfully generated ${allFeatures.length} features across ${Object.keys(folderStats).length} folders!`);
+console.log(`Parsed ${allFeatures.length} features with accurate ZSU & Russian colors!`);

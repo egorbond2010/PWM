@@ -191,8 +191,8 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         type: 'fill',
         source: 'ukraine-border-source',
         paint: {
-          'fill-color': '#2b4b77',
-          'fill-opacity': 0,
+          'fill-color': '#1d4ed8',
+          'fill-opacity': 0.14,
         },
       });
 
