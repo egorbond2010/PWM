@@ -76,16 +76,22 @@ export const App: React.FC = () => {
 
   const loadData = async () => {
     try {
-      const kmlRes = await fetch('/data/pwm_kml_parsed.geojson');
-      if (kmlRes.ok) {
+      let kmlRes = await fetch('./data/pwm_kml_parsed.geojson').catch(() => null);
+      if (!kmlRes || !kmlRes.ok) {
+        kmlRes = await fetch('/data/pwm_kml_parsed.geojson').catch(() => null);
+      }
+      if (kmlRes && kmlRes.ok) {
         const kmlData = await kmlRes.json();
         if (kmlData?.features?.length > 0) {
           setMapFeatures(kmlData);
         }
       }
 
-      const statsRes = await fetch('/data/pwm_folder_stats.json');
-      if (statsRes.ok) {
+      let statsRes = await fetch('./data/pwm_folder_stats.json').catch(() => null);
+      if (!statsRes || !statsRes.ok) {
+        statsRes = await fetch('/data/pwm_folder_stats.json').catch(() => null);
+      }
+      if (statsRes && statsRes.ok) {
         const statsData = await statsRes.json();
         setFolderStats(statsData);
       }

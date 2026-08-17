@@ -60,7 +60,7 @@ export const Header: React.FC<HeaderProps> = ({
 
         <div className="flex items-center space-x-2.5">
           <img 
-            src="/pwm-avatar.png" 
+            src="./pwm-avatar.png" 
             alt="PWM Logo" 
             className="w-9 h-9 rounded-lg object-cover shadow-sm ring-1 ring-black/30 shrink-0" 
           />
