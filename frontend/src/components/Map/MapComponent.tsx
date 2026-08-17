@@ -136,10 +136,17 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       style: mapStyle,
       center: DEFAULT_CENTER,
       zoom: DEFAULT_ZOOM,
+      minZoom: 4.5,
+      maxZoom: 17.0,
+      maxBounds: [
+        [12.0, 39.0], // Southwest bounds (Europe)
+        [48.0, 58.0], // Northeast bounds (Europe)
+      ],
+      renderWorldCopies: false,
       pitch: 0,
       bearing: 0,
       fadeDuration: 0,
-      maxTileCacheSize: 150,
+      maxTileCacheSize: 200,
       trackResize: true,
     });
 

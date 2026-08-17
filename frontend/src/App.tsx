@@ -153,20 +153,26 @@ export const App: React.FC = () => {
     return history.find((h) => h.territory_id === selectedFeatureId) || null;
   }, [selectedFeatureId, history]);
 
+  const [isCleanMode, setIsCleanMode] = useState(false);
+
   return (
     <div className="flex flex-col h-screen w-screen bg-[#0a0d14] text-slate-100 overflow-hidden font-sans select-none">
-      <Header
-        activeViewMode={activeViewMode}
-        setActiveViewMode={setActiveViewMode}
-        onOpenKmlModal={() => setIsKmlModalOpen(true)}
-        onOpenDiffModal={() => setIsDiffModalOpen(true)}
-        onOpenEditorModal={() => setIsEditorModalOpen(true)}
-        isWsConnected={isWsConnected}
-        onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
-        isSidebarOpen={isSidebarOpen}
-        basemapType={basemapType}
-        onChangeBasemap={(type) => setBasemapType(type)}
-      />
+      {!isCleanMode && (
+        <Header
+          activeViewMode={activeViewMode}
+          setActiveViewMode={setActiveViewMode}
+          onOpenKmlModal={() => setIsKmlModalOpen(true)}
+          onOpenDiffModal={() => setIsDiffModalOpen(true)}
+          onOpenEditorModal={() => setIsEditorModalOpen(true)}
+          isWsConnected={isWsConnected}
+          onToggleSidebar={() => setIsSidebarOpen(!isSidebarOpen)}
+          isSidebarOpen={isSidebarOpen}
+          basemapType={basemapType}
+          onChangeBasemap={(type) => setBasemapType(type)}
+          isCleanMode={isCleanMode}
+          onToggleCleanMode={() => setIsCleanMode(true)}
+        />
+      )}
 
       <main className="relative flex-1 w-full h-full overflow-hidden">
         <MapComponent
@@ -181,25 +187,52 @@ export const App: React.FC = () => {
           basemapType={basemapType}
         />
 
-        <Sidebar
-          features={mapFeatures.features}
-          folderStats={folderStats}
-          history={history}
-          selectedFeatureId={selectedFeatureId}
-          onSelectFeature={handleSelectFeature}
-          visibleFolders={visibleFolders}
-          onToggleFolder={handleToggleFolder}
-          visibleBaseLayers={visibleBaseLayers}
-          onToggleBaseLayer={handleToggleBaseLayer}
-          onOpenSourceModal={(id) => {
-            setSelectedFeatureId(id);
-            setIsVerificationModalOpen(true);
-          }}
-          basemapType={basemapType}
-          onChangeBasemap={(type) => setBasemapType(type)}
-          isOpen={isSidebarOpen}
-          onClose={() => setIsSidebarOpen(false)}
-        />
+        {!isCleanMode && (
+          <Sidebar
+            features={mapFeatures.features}
+            folderStats={folderStats}
+            history={history}
+            selectedFeatureId={selectedFeatureId}
+            onSelectFeature={handleSelectFeature}
+            visibleFolders={visibleFolders}
+            onToggleFolder={handleToggleFolder}
+            visibleBaseLayers={visibleBaseLayers}
+            onToggleBaseLayer={handleToggleBaseLayer}
+            onOpenSourceModal={(id) => {
+              setSelectedFeatureId(id);
+              setIsVerificationModalOpen(true);
+            }}
+            basemapType={basemapType}
+            onChangeBasemap={(type) => setBasemapType(type)}
+            isOpen={isSidebarOpen}
+            onClose={() => setIsSidebarOpen(false)}
+          />
+        )}
+
+        {/* Floating Return Button when in Clean Map Mode */}
+        {isCleanMode && (
+          <div className="absolute top-3 right-3 z-30 flex items-center space-x-2 bg-slate-900/85 backdrop-blur-md px-3 py-2 rounded-xl border border-slate-700/60 shadow-xl">
+            <button
+              onClick={() => {
+                if (basemapType === 'satellite') setBasemapType('dark');
+                else if (basemapType === 'dark') setBasemapType('streets');
+                else setBasemapType('satellite');
+              }}
+              className="p-1.5 rounded-lg bg-slate-800 hover:bg-slate-700 text-white transition text-xs flex items-center space-x-1"
+              title="Змінити тему карти"
+            >
+              {basemapType === 'dark' ? '🌙' : basemapType === 'streets' ? '☀️' : '🛰️'}
+            </button>
+
+            <button
+              onClick={() => setIsCleanMode(false)}
+              className="px-2.5 py-1.5 rounded-lg bg-red-600 hover:bg-red-700 text-white font-medium text-xs transition shadow-xs flex items-center space-x-1.5"
+              title="Повернути панелі та меню"
+            >
+              <span>Показати меню</span>
+            </button>
+          </div>
+        )}
       </main>
 
       {isVerificationModalOpen && selectedFeature && (

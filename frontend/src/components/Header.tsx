@@ -2,10 +2,11 @@ import React, { useState, useRef, useEffect } from 'react';
 import { 
   Menu, 
   Settings, 
-  GitCompare, 
-  UploadCloud, 
-  FileEdit, 
-  ShieldCheck 
+  Moon, 
+  Sun, 
+  Globe, 
+  Maximize2,
+  Minimize2
 } from 'lucide-react';
 
 interface HeaderProps {
@@ -19,19 +20,17 @@ interface HeaderProps {
   isSidebarOpen?: boolean;
   basemapType?: 'satellite' | 'dark' | 'streets';
   onChangeBasemap?: (type: 'satellite' | 'dark' | 'streets') => void;
+  isCleanMode?: boolean;
+  onToggleCleanMode?: () => void;
 }
 
 export const Header: React.FC<HeaderProps> = ({
-  activeViewMode,
-  setActiveViewMode,
-  onOpenKmlModal,
-  onOpenDiffModal,
-  onOpenEditorModal,
-  isWsConnected,
   onToggleSidebar,
   isSidebarOpen,
   basemapType = 'satellite',
   onChangeBasemap,
+  isCleanMode = false,
+  onToggleCleanMode,
 }) => {
   const [isMenuOpen, setIsMenuOpen] = useState(false);
   const menuRef = useRef<HTMLDivElement>(null);
@@ -46,8 +45,27 @@ export const Header: React.FC<HeaderProps> = ({
     return () => document.removeEventListener('mousedown', handleClickOutside);
   }, []);
 
+  const handleCycleBasemap = () => {
+    if (!onChangeBasemap) return;
+    if (basemapType === 'satellite') onChangeBasemap('dark');
+    else if (basemapType === 'dark') onChangeBasemap('streets');
+    else onChangeBasemap('satellite');
+  };
+
+  const getBasemapIcon = () => {
+    if (basemapType === 'dark') return <Moon className="w-4 h-4 text-amber-300" />;
+    if (basemapType === 'streets') return <Sun className="w-4 h-4 text-yellow-300" />;
+    return <Globe className="w-4 h-4 text-cyan-200" />;
+  };
+
+  const getBasemapTitle = () => {
+    if (basemapType === 'dark') return 'Темна тема (Місяць)';
+    if (basemapType === 'streets') return 'Світла тема (Сонце)';
+    return 'Супутник';
+  };
+
   return (
-    <header className="h-14 bg-[#d71920] text-white px-3 sm:px-4 flex items-center justify-between z-30 select-none shadow-md">
+    <header className="h-14 bg-[#d71920] text-white px-3 sm:px-4 flex items-center justify-between z-30 select-none shadow-md shrink-0">
       {/* Left side: Hamburger, Logo badge, Title */}
       <div className="flex items-center space-x-3">
         <button
@@ -75,20 +93,48 @@ export const Header: React.FC<HeaderProps> = ({
         </div>
       </div>
 
-      {/* Right side: Telegram pill button and Settings gear */}
-      <div className="flex items-center space-x-2 sm:space-x-3" ref={menuRef}>
+      {/* Right side: Clean Mode, Theme Toggle, Telegram, Settings */}
+      <div className="flex items-center space-x-2 sm:space-x-2.5" ref={menuRef}>
+        {/* Quick Theme Switcher (Moon / Sun / Satellite) */}
+        {onChangeBasemap && (
+          <button
+            onClick={handleCycleBasemap}
+            className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-full bg-black/20 hover:bg-black/30 border border-white/20 text-white text-xs font-medium transition shadow-xs"
+            title={`Перемкнути тему карти (зараз: ${getBasemapTitle()})`}
+          >
+            {getBasemapIcon()}
+            <span className="hidden md:inline text-[11px] font-medium tracking-tight">
+              {getBasemapTitle()}
+            </span>
+          </button>
+        )}
+
+        {/* Clean Map Mode Toggle */}
+        {onToggleCleanMode && (
+          <button
+            onClick={onToggleCleanMode}
+            className="flex items-center space-x-1.5 px-2.5 py-1.5 rounded-full bg-black/20 hover:bg-black/30 border border-white/20 text-white text-xs font-medium transition shadow-xs"
+            title={isCleanMode ? "Повернути панелі" : "Лише карта (приховати всі панелі)"}
+          >
+            {isCleanMode ? <Minimize2 className="w-3.5 h-3.5" /> : <Maximize2 className="w-3.5 h-3.5" />}
+            <span className="hidden sm:inline text-[11px] font-medium tracking-tight">
+              {isCleanMode ? "Панелі" : "Лише карта"}
+            </span>
+          </button>
+        )}
+
+        {/* Telegram Link */}
         <a
           href="https://t.me/PWMmap"
           target="_blank"
           rel="noopener noreferrer"
-          className="flex items-center space-x-1.5 px-3 py-1 rounded-full bg-black/20 hover:bg-black/30 border border-white/20 text-white text-xs font-medium transition shadow-xs"
+          className="flex items-center space-x-1.5 px-3 py-1.5 rounded-full bg-black/20 hover:bg-black/30 border border-white/20 text-white text-xs font-medium transition shadow-xs"
           title="Відкрити Telegram канал @PWMmap"
         >
-          {/* Telegram Plane Icon */}
           <svg className="w-3.5 h-3.5 fill-white" viewBox="0 0 24 24">
             <path d="M12 0C5.373 0 0 5.373 0 12s5.373 12 12 12 12-5.373 12-12S18.627 0 12 0zm5.894 8.221l-1.97 9.28c-.145.658-.537.818-1.084.508l-3-2.21-1.446 1.394c-.16.16-.295.295-.605.295l.213-3.053 5.56-5.023c.242-.213-.054-.333-.373-.121l-6.871 4.326-2.962-.924c-.643-.204-.657-.643.136-.953l11.57-4.458c.538-.196 1.006.128.832.939z" />
           </svg>
-          <span className="tracking-tight">t.me/PWMmap</span>
+          <span className="hidden xs:inline tracking-tight">t.me/PWMmap</span>
         </a>
 
         {/* Settings button & dropdown */}
@@ -96,7 +142,7 @@ export const Header: React.FC<HeaderProps> = ({
           <button
             onClick={() => setIsMenuOpen(!isMenuOpen)}
             className="w-8 h-8 rounded-full bg-black/20 hover:bg-black/30 border border-white/20 flex items-center justify-center text-white transition focus:outline-none"
-            title="Налаштування та інструменти"
+            title="Тип карти"
           >
             <Settings className="w-4 h-4" />
           </button>
@@ -135,7 +181,7 @@ export const Header: React.FC<HeaderProps> = ({
                           : 'bg-slate-100 text-slate-700 hover:bg-slate-200'
                       }`}
                     >
-                      Схема
+                      Світла
                     </button>
                     <button
                       onClick={() => {
