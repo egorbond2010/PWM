@@ -221,11 +221,13 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         paint: {
           'fill-color': [
             'case',
+            ['==', ['get', 'folder'], 'Сіра зона'], '#ffffff',
             ['has', 'color_hex'], ['get', 'color_hex'],
             '#8b3a2b'
           ],
           'fill-opacity': [
             'case',
+            ['==', ['get', 'folder'], 'Сіра зона'], 0.85,
             ['has', 'fill_opacity'], ['get', 'fill_opacity'],
             0.55
           ],
@@ -274,17 +276,6 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           'circle-stroke-width': 1.2,
           'circle-stroke-color': '#000000',
           'circle-opacity': 0.90,
-        },
-      });
-
-      map.addLayer({
-        id: 'transportation-layer',
-        type: 'raster',
-        source: 'esri-transportation',
-        minzoom: 6,
-        maxzoom: 19,
-        paint: {
-          'raster-opacity': 0.65,
         },
       });
 
