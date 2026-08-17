@@ -191,8 +191,31 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         type: 'fill',
         source: 'ukraine-border-source',
         paint: {
-          'fill-color': '#1e3a8a',
-          'fill-opacity': 0.07,
+          'fill-color': '#244577',
+          'fill-opacity': 0.42,
+        },
+      });
+
+      map.addLayer({
+        id: 'ukraine-oblast-borders-line',
+        type: 'line',
+        source: 'ukraine-border-source',
+        paint: {
+          'line-color': '#3b6bb8',
+          'line-width': 1.2,
+          'line-opacity': 0.70,
+        },
+      });
+
+      map.addLayer({
+        id: 'ukraine-state-border-glow',
+        type: 'line',
+        source: 'ukraine-border-source',
+        paint: {
+          'line-color': '#ffffff',
+          'line-width': 5.0,
+          'line-opacity': 0.35,
+          'line-blur': 2.0,
         },
       });
 
@@ -202,9 +225,8 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         source: 'ukraine-border-source',
         paint: {
           'line-color': '#ffffff',
-          'line-width': 2.2,
-          'line-dasharray': [4, 2],
-          'line-opacity': 0.90,
+          'line-width': 2.8,
+          'line-opacity': 0.95,
         },
       });
 
@@ -461,6 +483,12 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       const bordersVisible = visibleBaseLayers.borders !== false;
       map.setLayoutProperty('ukraine-state-border-line', 'visibility', bordersVisible ? 'visible' : 'none');
       map.setLayoutProperty('ukraine-sovereign-fill', 'visibility', bordersVisible ? 'visible' : 'none');
+      if (map.getLayer('ukraine-oblast-borders-line')) {
+        map.setLayoutProperty('ukraine-oblast-borders-line', 'visibility', bordersVisible ? 'visible' : 'none');
+      }
+      if (map.getLayer('ukraine-state-border-glow')) {
+        map.setLayoutProperty('ukraine-state-border-glow', 'visibility', bordersVisible ? 'visible' : 'none');
+      }
       map.setLayoutProperty('neighbors-line', 'visibility', bordersVisible ? 'visible' : 'none');
     }
   }, [visibleFolders, visibleBaseLayers, mapLoaded]);
