@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<kml xmlns="http://www.opengis.net/kml/2.2">
+  <Document>
+    <name>Perfect War Map</name>
+    <description><![CDATA[Карта від каналу https://t.me/PWMmap<br>Різні шари типу міст і лінії фронта по рокам можна вдключати!]]></description>
+    <NetworkLink>
+      <name>Perfect War Map</name>
+      <Link>
+        <href><![CDATA[https://www.google.com/maps/d/u/0/kml?forcekml=1&mid=1Zken1j_1Dx2OJBjovbyOHA4VzDb48U0]]></href>
+      </Link>
+    </NetworkLink>
+  </Document>
+</kml>

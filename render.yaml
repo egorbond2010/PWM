@@ -1,0 +1,11 @@
+services:
+  - type: web
+    name: pwm-backend
+    env: go
+    plan: free
+    rootDir: backend
+    buildCommand: go build -o server ./cmd/server
+    startCommand: ./server
+    envVars:
+      - key: PORT
+        value: 8080
