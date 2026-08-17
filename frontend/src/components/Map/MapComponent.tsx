@@ -294,28 +294,51 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         },
       });
 
-      map.on('click', 'kml-polygons-fill', (e) => {
-        if (e.features && e.features.length > 0) {
-          const featureId = e.features[0].properties?.id;
-          if (featureId) {
-            onSelectFeature(featureId);
-          }
-        }
+      const popup = new maplibregl.Popup({
+        closeButton: true,
+        closeOnClick: true,
+        offset: 10,
+        className: 'pwm-map-popup',
       });
 
-      map.on('click', 'kml-points-circle', (e) => {
-        if (e.features && e.features.length > 0) {
-          const featureId = e.features[0].properties?.id;
-          if (featureId) {
-            onSelectFeature(featureId);
-          }
+      const showFeaturePopup = (e: maplibregl.MapLayerMouseEvent) => {
+        if (!e.features || e.features.length === 0) return;
+        const feat = e.features[0];
+        const props = feat.properties || {};
+        const name = props.name || 'Об\'єкт карти';
+        const folder = props.folder || '';
+        const desc = props.description || '';
+        const featureId = props.id;
+
+        if (featureId) {
+          onSelectFeature(featureId);
         }
-      });
+
+        popup
+          .setLngLat(e.lngLat)
+          .setHTML(`
+            <div style="font-family: system-ui, -apple-system, sans-serif; color: #0f172a; padding: 4px 6px; min-width: 160px; max-width: 280px;">
+              <div style="font-weight: 700; font-size: 13px; color: #0f172a; line-height: 1.3; margin-bottom: 3px;">${name}</div>
+              ${folder ? `<div style="font-size: 11px; color: #64748b; margin-bottom: 4px;">📁 ${folder}</div>` : ''}
+              ${desc ? `<div style="font-size: 11px; color: #334155; line-height: 1.4; max-height: 160px; overflow-y: auto; padding-top: 2px;">${desc}</div>` : ''}
+            </div>
+          `)
+          .addTo(map);
+      };
+
+      map.on('click', 'kml-polygons-fill', showFeaturePopup);
+      map.on('click', 'kml-points-circle', showFeaturePopup);
 
       map.on('mouseenter', 'kml-polygons-fill', () => {
         map.getCanvas().style.cursor = 'pointer';
       });
       map.on('mouseleave', 'kml-polygons-fill', () => {
+        map.getCanvas().style.cursor = '';
+      });
+      map.on('mouseenter', 'kml-points-circle', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', 'kml-points-circle', () => {
         map.getCanvas().style.cursor = '';
       });
       

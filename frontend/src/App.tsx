@@ -136,7 +136,6 @@ export const App: React.FC = () => {
 
   const handleSelectFeature = (featureId: string) => {
     setSelectedFeatureId(featureId);
-    setIsVerificationModalOpen(true);
   };
 
   const selectedFeature = useMemo<GeoJSONFeature | null>(() => {
