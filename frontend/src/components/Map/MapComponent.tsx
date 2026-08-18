@@ -267,27 +267,87 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         },
       });
 
+      const pointsGeoJSON = {
+        type: 'FeatureCollection',
+        features: (features?.features || []).filter((f) => f.geometry?.type === 'Point'),
+      };
+
+      map.addSource('kml-points-source', {
+        type: 'geojson',
+        data: pointsGeoJSON as any,
+        cluster: true,
+        clusterMaxZoom: 13,
+        clusterRadius: 35,
+      });
+
+      // 1. Cluster badges with soft glowing border
       map.addLayer({
-        id: 'kml-points-circle',
+        id: 'kml-clusters-circle',
         type: 'circle',
-        source: 'kml-features-source',
-        filter: ['==', ['geometry-type'], 'Point'],
+        source: 'kml-points-source',
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-color': [
+            'step',
+            ['get', 'point_count'],
+            '#1e293b', // < 10 points
+            10, '#0f172a', // 10-25 points
+            25, '#020617'  // 25+ points
+          ],
+          'circle-radius': [
+            'step',
+            ['get', 'point_count'],
+            12,
+            10, 15,
+            25, 19
+          ],
+          'circle-stroke-width': 1.5,
+          'circle-stroke-color': '#38bdf8',
+          'circle-opacity': 0.90,
+        },
+      });
+
+      // 2. Cluster count text (+5, +12)
+      map.addLayer({
+        id: 'kml-cluster-count',
+        type: 'symbol',
+        source: 'kml-points-source',
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': '+{point_count_abbreviated}',
+          'text-size': 11,
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+        },
+        paint: {
+          'text-color': '#ffffff',
+        },
+      });
+
+      // 3. Refined individual tactical points (-30% smaller, 1px sleek border)
+      map.addLayer({
+        id: 'kml-unclustered-points',
+        type: 'circle',
+        source: 'kml-points-source',
+        filter: ['!', ['has', 'point_count']],
         paint: {
           'circle-radius': [
             'interpolate',
             ['linear'],
             ['zoom'],
-            6, 3.5,
-            12, 6.5,
+            5, 2.5,
+            8, 4.0,
+            12, 5.5,
+            16, 7.5,
           ],
           'circle-color': [
             'case',
             ['has', 'color_hex'], ['get', 'color_hex'],
             '#3b82f6'
           ],
-          'circle-stroke-width': 1.2,
-          'circle-stroke-color': '#000000',
-          'circle-opacity': 0.90,
+          'circle-stroke-width': 1.0,
+          'circle-stroke-color': '#0f172a',
+          'circle-opacity': 0.95,
         },
       });
 
@@ -384,7 +444,23 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       };
 
       map.on('click', 'kml-polygons-fill', showFeaturePopup);
-      map.on('click', 'kml-points-circle', showFeaturePopup);
+      map.on('click', 'kml-unclustered-points', showFeaturePopup);
+
+      // Cluster click -> zoom in to expand
+      map.on('click', 'kml-clusters-circle', (e) => {
+        const feats = map.queryRenderedFeatures(e.point, { layers: ['kml-clusters-circle'] });
+        const clusterId = feats[0]?.properties?.cluster_id;
+        const source: any = map.getSource('kml-points-source');
+        if (source && clusterId !== undefined) {
+          source.getClusterExpansionZoom(clusterId, (err: any, zoom: number) => {
+            if (err) return;
+            map.easeTo({
+              center: (feats[0].geometry as any).coordinates,
+              zoom: Math.min(zoom, 15),
+            });
+          });
+        }
+      });
 
       map.on('mouseenter', 'kml-polygons-fill', () => {
         map.getCanvas().style.cursor = 'pointer';
@@ -392,10 +468,16 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       map.on('mouseleave', 'kml-polygons-fill', () => {
         map.getCanvas().style.cursor = '';
       });
-      map.on('mouseenter', 'kml-points-circle', () => {
+      map.on('mouseenter', 'kml-clusters-circle', () => {
         map.getCanvas().style.cursor = 'pointer';
       });
-      map.on('mouseleave', 'kml-points-circle', () => {
+      map.on('mouseleave', 'kml-clusters-circle', () => {
+        map.getCanvas().style.cursor = '';
+      });
+      map.on('mouseenter', 'kml-unclustered-points', () => {
+        map.getCanvas().style.cursor = 'pointer';
+      });
+      map.on('mouseleave', 'kml-unclustered-points', () => {
         map.getCanvas().style.cursor = '';
       });
 
@@ -431,6 +513,13 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     if (source) {
       source.setData(features as any);
     }
+    const pointsSource = map.getSource('kml-points-source') as maplibregl.GeoJSONSource;
+    if (pointsSource) {
+      pointsSource.setData({
+        type: 'FeatureCollection',
+        features: (features?.features || []).filter((f) => f.geometry?.type === 'Point'),
+      } as any);
+    }
   }, [features, mapLoaded]);
 
   useEffect(() => {
@@ -445,16 +534,28 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       if (activeFolders.length === 0) {
         map.setLayoutProperty('kml-polygons-fill', 'visibility', 'none');
         map.setLayoutProperty('kml-polygons-line', 'visibility', 'none');
-        map.setLayoutProperty('kml-points-circle', 'visibility', 'none');
       } else {
         map.setLayoutProperty('kml-polygons-fill', 'visibility', 'visible');
         map.setLayoutProperty('kml-polygons-line', 'visibility', 'visible');
-        map.setLayoutProperty('kml-points-circle', 'visibility', 'visible');
 
         const filterExp: any = ['match', ['get', 'folder'], activeFolders, true, false];
         map.setFilter('kml-polygons-fill', ['all', ['in', ['geometry-type'], ['literal', ['Polygon', 'MultiPolygon']]], filterExp]);
         map.setFilter('kml-polygons-line', ['all', ['==', ['geometry-type'], 'LineString'], filterExp]);
-        map.setFilter('kml-points-circle', ['all', ['==', ['geometry-type'], 'Point'], filterExp]);
+      }
+    }
+
+    if (map.getLayer('kml-unclustered-points')) {
+      if (activeFolders.length === 0) {
+        map.setLayoutProperty('kml-clusters-circle', 'visibility', 'none');
+        map.setLayoutProperty('kml-cluster-count', 'visibility', 'none');
+        map.setLayoutProperty('kml-unclustered-points', 'visibility', 'none');
+      } else {
+        map.setLayoutProperty('kml-clusters-circle', 'visibility', 'visible');
+        map.setLayoutProperty('kml-cluster-count', 'visibility', 'visible');
+        map.setLayoutProperty('kml-unclustered-points', 'visibility', 'visible');
+
+        const filterExp: any = ['match', ['get', 'folder'], activeFolders, true, false];
+        map.setFilter('kml-unclustered-points', ['all', ['!', ['has', 'point_count']], filterExp]);
       }
     }
 
@@ -467,10 +568,6 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     if (map.getLayer('ukraine-state-border-line')) {
       const bordersVisible = visibleBaseLayers.borders !== false;
       map.setLayoutProperty('ukraine-state-border-line', 'visibility', bordersVisible ? 'visible' : 'none');
-      map.setLayoutProperty('ukraine-sovereign-fill', 'visibility', bordersVisible ? 'visible' : 'none');
-      if (map.getLayer('ukraine-oblast-borders-line')) {
-        map.setLayoutProperty('ukraine-oblast-borders-line', 'visibility', bordersVisible ? 'visible' : 'none');
-      }
       map.setLayoutProperty('neighbors-line', 'visibility', bordersVisible ? 'visible' : 'none');
     }
   }, [visibleFolders, visibleBaseLayers, mapLoaded]);
