@@ -100,13 +100,27 @@ for (let fIdx = 0; fIdx < folders.length; fIdx++) {
     }
 
     let side = 'other';
-    const isZsu = colorHex === '#3b82f6' || colorHex === '#1a73e8' || lowerName.includes('зсу') || lowerDesc.includes('зсу') || (folderName.includes('Позиції') && (lowerName.includes('син') || colorHex === '#3b82f6'));
-    const isRu = colorHex === '#ef4444' || colorHex === '#b83a3a' || lowerName.includes('зсрф') || lowerName.includes('рф') || lowerName.includes('окуповано') || folderName.includes('Основна Карта') || folderName.includes('Денере') || folderName.includes('Росії');
+    const cUpper = (colorHex || '').toUpperCase();
+    
+    // Is Blue / ZSU?
+    const isBlueHex = cUpper.includes('0288D1') || cUpper.includes('418AB3') || cUpper.includes('3B82F6') || 
+                      cUpper.includes('1A73E8') || cUpper.includes('0097A7') || cUpper.includes('00ACC1') ||
+                      cUpper.includes('1E88E5') || cUpper.includes('2196F3') || cUpper.includes('3F51B5');
+    
+    // Is Red / Russian?
+    const isRedHex = cUpper.includes('A52714') || cUpper.includes('C2185B') || cUpper.includes('E65100') ||
+                     cUpper.includes('EF4444') || cUpper.includes('B83A3A') || cUpper.includes('D50000') ||
+                     cUpper.includes('F44336') || cUpper.includes('E53935') || cUpper.includes('B71C1C');
+
+    const isZsu = isBlueHex || lowerName.includes('зсу') || lowerDesc.includes('зсу') || (folderName.includes('Позиції') && (lowerName.includes('син') || isBlueHex));
+    const isRu = isRedHex || lowerName.includes('зсрф') || lowerName.includes('рф') || lowerName.includes('окуповано') || folderName.includes('Основна Карта') || folderName.includes('Денере') || folderName.includes('Росії');
 
     if (isZsu) {
       side = 'zsu';
+      colorHex = '#3b82f6';
     } else if (isRu) {
       side = 'ru';
+      colorHex = '#ef4444';
     }
 
     allFeatures.push({

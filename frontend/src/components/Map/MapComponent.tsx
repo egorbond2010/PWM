@@ -282,8 +282,8 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         type: 'geojson',
         data: { type: 'FeatureCollection', features: zsuPoints } as any,
         cluster: true,
-        clusterMaxZoom: 13,
-        clusterRadius: 35,
+        clusterMaxZoom: 10,
+        clusterRadius: 28,
       });
 
       map.addLayer({
@@ -302,9 +302,9 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           'circle-radius': [
             'step',
             ['get', 'point_count'],
-            12,
-            10, 15,
-            25, 19
+            13,
+            10, 16,
+            25, 20
           ],
           'circle-stroke-width': 2.0,
           'circle-stroke-color': '#38bdf8', // Vibrant Cyan/Blue glow
@@ -355,8 +355,8 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         type: 'geojson',
         data: { type: 'FeatureCollection', features: ruPoints } as any,
         cluster: true,
-        clusterMaxZoom: 13,
-        clusterRadius: 35,
+        clusterMaxZoom: 10,
+        clusterRadius: 28,
       });
 
       map.addLayer({
