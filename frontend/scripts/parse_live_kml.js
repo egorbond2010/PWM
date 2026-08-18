@@ -72,8 +72,8 @@ for (let fIdx = 0; fIdx < folders.length; fIdx++) {
         name = 'Сіра зона';
       }
     } else if (folderName.includes('Території, які контролювали ЗСУ в Росії')) {
-      // Ukrainian control in Kursk/Russia -> Soft Matte Blue (#3b6bb8)
-      colorHex = '#3b6bb8';
+      // Sudzha / Kursk / Russian territories -> Red (#b83a3a)
+      colorHex = '#b83a3a';
       opacity = 0.38;
     } else if (folderName.includes('Звільнені території')) {
       // Liberated Ukrainian territories -> Natural Sage Green (#2e9e6b)

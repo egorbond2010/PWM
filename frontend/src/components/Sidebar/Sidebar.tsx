@@ -112,7 +112,7 @@ export const Sidebar: React.FC<SidebarProps> = ({
   }, [visibleFolders, folderStats, featuresByFolder]);
 
   // Fallback demo items if backend features are loading or empty
-  const defaultFolderItems: Record<string, Array<{ name: string; type: 'red-square' | 'red-polygon' | 'yellow-pin' | 'blue-pin' | 'green-polygon' }>> = {
+  const defaultFolderItems: Record<string, Array<{ name: string; type: 'red-square' | 'red-polygon' | 'yellow-pin' | 'blue-pin' | 'green-polygon' | 'red-pin' }>> = {
     'Основна Карта': [
       { name: 'Окуповано', type: 'red-square' },
       { name: 'Polygon 35', type: 'red-polygon' },
@@ -120,10 +120,10 @@ export const Sidebar: React.FC<SidebarProps> = ({
       { name: 'Polygon 63', type: 'red-polygon' },
     ],
     'Території, які контролювали ЗСУ в Росії': [
-      { name: 'Тьоткіно', type: 'blue-pin' },
-      { name: 'Суджа', type: 'blue-pin' },
-      { name: 'Демидівка', type: 'blue-pin' },
-      { name: 'Грайворон', type: 'blue-pin' },
+      { name: 'Тьоткіно', type: 'red-pin' },
+      { name: 'Суджа', type: 'red-pin' },
+      { name: 'Демидівка', type: 'red-pin' },
+      { name: 'Грайворон', type: 'red-pin' },
     ],
     'Звільнені території': [
       { name: 'Звільнено (Північ)', type: 'green-polygon' },
@@ -156,9 +156,9 @@ export const Sidebar: React.FC<SidebarProps> = ({
         <MapPin className="w-3.5 h-3.5 text-amber-500 fill-amber-500/20 shrink-0" />
       );
     }
-    if (folderName.includes('Росії') || lower.includes('тьоткіно') || lower.includes('суджа') || lower.includes('демидівка') || lower.includes('грайворон')) {
+    if (folderName.includes('Росії') || lower.includes('тьоткіно') || lower.includes('суджа') || lower.includes('демидівка') || lower.includes('грайворон') || lower.includes('щетинівка') || lower.includes('журавлівка')) {
       return (
-        <MapPin className="w-3.5 h-3.5 text-[#1a73e8] fill-[#1a73e8]/20 shrink-0" />
+        <MapPin className="w-3.5 h-3.5 text-[#ef4444] fill-[#ef4444]/20 shrink-0" />
       );
     }
     if (folderName.includes('Звільнені') || lower.includes('звільнено') || lower.includes('деокупація')) {
