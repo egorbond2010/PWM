@@ -44,6 +44,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
 
     const mapStyle: maplibregl.StyleSpecification = {
       version: 8,
+      glyphs: 'https://demotiles.maplibre.org/font/{fontstack}/{range}.pbf',
       sources: {
         'satellite-base': {
           type: 'raster',

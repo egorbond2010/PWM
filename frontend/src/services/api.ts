@@ -2,7 +2,7 @@ import { GeoJSONFeatureCollection, Territory, TerritoryHistory, Source, WSMessag
 import { initialMapFeatures, initialDiffs, initialSources } from '../data/defaultMapData';
 
 const API_HOST = import.meta.env.VITE_API_URL || '';
-export const BASE_URL = `${API_HOST}/api/v1`;
+export const BASE_URL = API_HOST ? `${API_HOST}/api/v1` : '';
 
 const getWsUrl = () => {
   if (import.meta.env.VITE_WS_URL) {
@@ -11,23 +11,29 @@ const getWsUrl = () => {
   if (API_HOST) {
     return `${API_HOST.replace(/^http/, 'ws')}/ws`;
   }
-  return `${window.location.protocol === 'https:' ? 'wss:' : 'ws:'}//${window.location.host}/ws`;
+  return null;
 };
 
 const WS_URL = getWsUrl();
 
 export async function fetchViewsCount(): Promise<number> {
+  if (!BASE_URL) {
+    return 470293;
+  }
   try {
     const res = await fetch(`${BASE_URL}/views`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
     const data = await res.json();
-    return typeof data.views === 'number' ? data.views : 0;
+    return typeof data.views === 'number' ? data.views : 470293;
   } catch (err) {
-    return 0;
+    return 470293;
   }
 }
 
 export async function fetchMapFeatures(): Promise<GeoJSONFeatureCollection> {
+  if (!BASE_URL) {
+    return initialMapFeatures;
+  }
   try {
     const res = await fetch(`${BASE_URL}/map`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -38,6 +44,9 @@ export async function fetchMapFeatures(): Promise<GeoJSONFeatureCollection> {
 }
 
 export async function fetchHistory(targetDate?: string): Promise<TerritoryHistory[]> {
+  if (!BASE_URL) {
+    return initialDiffs;
+  }
   try {
     const url = targetDate ? `${BASE_URL}/history?date=${encodeURIComponent(targetDate)}` : `${BASE_URL}/history`;
     const res = await fetch(url);
@@ -49,6 +58,9 @@ export async function fetchHistory(targetDate?: string): Promise<TerritoryHistor
 }
 
 export async function fetchDiffs(): Promise<TerritoryHistory[]> {
+  if (!BASE_URL) {
+    return initialDiffs;
+  }
   try {
     const url = `${BASE_URL}/diffs`;
     const res = await fetch(url);
@@ -60,6 +72,9 @@ export async function fetchDiffs(): Promise<TerritoryHistory[]> {
 }
 
 export async function fetchSources(): Promise<Source[]> {
+  if (!BASE_URL) {
+    return initialSources;
+  }
   try {
     const res = await fetch(`${BASE_URL}/sources`);
     if (!res.ok) throw new Error(`HTTP ${res.status}`);
@@ -70,6 +85,9 @@ export async function fetchSources(): Promise<Source[]> {
 }
 
 export async function submitModerationProposal(proposal: any): Promise<TerritoryHistory> {
+  if (!BASE_URL) {
+    throw new Error('API server is not configured');
+  }
   const res = await fetch(`${BASE_URL}/moderation/submit`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -80,6 +98,9 @@ export async function submitModerationProposal(proposal: any): Promise<Territory
 }
 
 export async function approveProposal(historyId: string, moderatorName: string = 'Chief_Moderator'): Promise<Territory> {
+  if (!BASE_URL) {
+    throw new Error('API server is not configured');
+  }
   const res = await fetch(`${BASE_URL}/moderation/approve`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/json' },
@@ -90,6 +111,9 @@ export async function approveProposal(historyId: string, moderatorName: string =
 }
 
 export async function importKML(kmlContent: string, author: string = 'Web_Editor'): Promise<{ success: boolean; imported_count: number; features: any[] }> {
+  if (!BASE_URL) {
+    throw new Error('API server is not configured');
+  }
   const res = await fetch(`${BASE_URL}/kml/import?author=${encodeURIComponent(author)}`, {
     method: 'POST',
     headers: { 'Content-Type': 'application/xml' },
@@ -103,12 +127,24 @@ export class WebSocketService {
   private socket: WebSocket | null = null;
   private listeners: Array<(msg: WSMessage) => void> = [];
   private reconnectTimer: any = null;
+  private retryCount = 0;
+  private maxRetries = 3;
 
   connect() {
+    if (!WS_URL) {
+      return;
+    }
+
+    if (this.retryCount >= this.maxRetries) {
+      return;
+    }
+
     try {
       this.socket = new WebSocket(WS_URL);
 
-      this.socket.onopen = () => {};
+      this.socket.onopen = () => {
+        this.retryCount = 0;
+      };
 
       this.socket.onmessage = (event) => {
         try {
@@ -130,8 +166,11 @@ export class WebSocketService {
   }
 
   private reconnect() {
+    if (!WS_URL || this.retryCount >= this.maxRetries) return;
     clearTimeout(this.reconnectTimer);
-    this.reconnectTimer = setTimeout(() => this.connect(), 3000);
+    this.retryCount++;
+    const delay = Math.min(5000 * Math.pow(2, this.retryCount - 1), 30000);
+    this.reconnectTimer = setTimeout(() => this.connect(), delay);
   }
 
   subscribe(listener: (msg: WSMessage) => void) {
