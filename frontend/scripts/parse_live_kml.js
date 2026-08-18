@@ -99,8 +99,14 @@ for (let fIdx = 0; fIdx < folders.length; fIdx++) {
       opacity = 0.15;
     }
 
-    if (!colorHex) {
-      colorHex = '#3b6bb8';
+    let side = 'other';
+    const isZsu = colorHex === '#3b82f6' || colorHex === '#1a73e8' || lowerName.includes('зсу') || lowerDesc.includes('зсу') || (folderName.includes('Позиції') && (lowerName.includes('син') || colorHex === '#3b82f6'));
+    const isRu = colorHex === '#ef4444' || colorHex === '#b83a3a' || lowerName.includes('зсрф') || lowerName.includes('рф') || lowerName.includes('окуповано') || folderName.includes('Основна Карта') || folderName.includes('Денере') || folderName.includes('Росії');
+
+    if (isZsu) {
+      side = 'zsu';
+    } else if (isRu) {
+      side = 'ru';
     }
 
     allFeatures.push({
@@ -113,6 +119,7 @@ for (let fIdx = 0; fIdx < folders.length; fIdx++) {
         color_hex: colorHex,
         fill_opacity: opacity,
         stroke_color: isGreyZone ? '#ffffff' : colorHex,
+        side,
       }
     });
   }

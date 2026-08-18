@@ -267,32 +267,37 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         },
       });
 
-      const pointsGeoJSON = {
-        type: 'FeatureCollection',
-        features: (features?.features || []).filter((f) => f.geometry?.type === 'Point'),
-      };
+      const zsuPoints = (features?.features || []).filter(
+        (f) => f.geometry?.type === 'Point' && (f.properties?.side === 'zsu' || f.properties?.color_hex === '#3b82f6')
+      );
+      const ruPoints = (features?.features || []).filter(
+        (f) => f.geometry?.type === 'Point' && (f.properties?.side === 'ru' || f.properties?.color_hex === '#ef4444' || f.properties?.color_hex === '#b83a3a')
+      );
+      const otherPoints = (features?.features || []).filter(
+        (f) => f.geometry?.type === 'Point' && f.properties?.side !== 'zsu' && f.properties?.side !== 'ru' && f.properties?.color_hex !== '#3b82f6' && f.properties?.color_hex !== '#ef4444' && f.properties?.color_hex !== '#b83a3a'
+      );
 
-      map.addSource('kml-points-source', {
+      // --- 1. ZSU (Ukrainian Forces) Sources & Layers ---
+      map.addSource('kml-zsu-points-source', {
         type: 'geojson',
-        data: pointsGeoJSON as any,
+        data: { type: 'FeatureCollection', features: zsuPoints } as any,
         cluster: true,
         clusterMaxZoom: 13,
         clusterRadius: 35,
       });
 
-      // 1. Cluster badges with soft glowing border
       map.addLayer({
-        id: 'kml-clusters-circle',
+        id: 'kml-zsu-clusters-circle',
         type: 'circle',
-        source: 'kml-points-source',
+        source: 'kml-zsu-points-source',
         filter: ['has', 'point_count'],
         paint: {
           'circle-color': [
             'step',
             ['get', 'point_count'],
-            '#1e293b', // < 10 points
-            10, '#0f172a', // 10-25 points
-            25, '#020617'  // 25+ points
+            '#1e3a8a', // Deep Blue
+            10, '#172554',
+            25, '#0f172a'
           ],
           'circle-radius': [
             'step',
@@ -301,17 +306,16 @@ export const MapComponent: React.FC<MapComponentProps> = ({
             10, 15,
             25, 19
           ],
-          'circle-stroke-width': 1.5,
-          'circle-stroke-color': '#38bdf8',
-          'circle-opacity': 0.90,
+          'circle-stroke-width': 2.0,
+          'circle-stroke-color': '#38bdf8', // Vibrant Cyan/Blue glow
+          'circle-opacity': 0.92,
         },
       });
 
-      // 2. Cluster count text (+5, +12)
       map.addLayer({
-        id: 'kml-cluster-count',
+        id: 'kml-zsu-cluster-count',
         type: 'symbol',
-        source: 'kml-points-source',
+        source: 'kml-zsu-points-source',
         filter: ['has', 'point_count'],
         layout: {
           'text-field': '+{point_count_abbreviated}',
@@ -324,11 +328,114 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         },
       });
 
-      // 3. Refined individual tactical points (-30% smaller, 1px sleek border)
       map.addLayer({
-        id: 'kml-unclustered-points',
+        id: 'kml-zsu-unclustered-points',
         type: 'circle',
-        source: 'kml-points-source',
+        source: 'kml-zsu-points-source',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-radius': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            5, 2.5,
+            8, 4.0,
+            12, 5.5,
+            16, 7.5,
+          ],
+          'circle-color': '#3b82f6',
+          'circle-stroke-width': 1.0,
+          'circle-stroke-color': '#0f172a',
+          'circle-opacity': 0.95,
+        },
+      });
+
+      // --- 2. RU (Russian Forces) Sources & Layers ---
+      map.addSource('kml-ru-points-source', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: ruPoints } as any,
+        cluster: true,
+        clusterMaxZoom: 13,
+        clusterRadius: 35,
+      });
+
+      map.addLayer({
+        id: 'kml-ru-clusters-circle',
+        type: 'circle',
+        source: 'kml-ru-points-source',
+        filter: ['has', 'point_count'],
+        paint: {
+          'circle-color': [
+            'step',
+            ['get', 'point_count'],
+            '#991b1b', // Deep Crimson Red
+            10, '#7f1d1d',
+            25, '#450a0a'
+          ],
+          'circle-radius': [
+            'step',
+            ['get', 'point_count'],
+            12,
+            10, 15,
+            25, 19
+          ],
+          'circle-stroke-width': 2.0,
+          'circle-stroke-color': '#f87171', // Vibrant Red glow
+          'circle-opacity': 0.92,
+        },
+      });
+
+      map.addLayer({
+        id: 'kml-ru-cluster-count',
+        type: 'symbol',
+        source: 'kml-ru-points-source',
+        filter: ['has', 'point_count'],
+        layout: {
+          'text-field': '+{point_count_abbreviated}',
+          'text-size': 11,
+          'text-allow-overlap': true,
+          'text-ignore-placement': true,
+        },
+        paint: {
+          'text-color': '#ffffff',
+        },
+      });
+
+      map.addLayer({
+        id: 'kml-ru-unclustered-points',
+        type: 'circle',
+        source: 'kml-ru-points-source',
+        filter: ['!', ['has', 'point_count']],
+        paint: {
+          'circle-radius': [
+            'interpolate',
+            ['linear'],
+            ['zoom'],
+            5, 2.5,
+            8, 4.0,
+            12, 5.5,
+            16, 7.5,
+          ],
+          'circle-color': '#ef4444',
+          'circle-stroke-width': 1.0,
+          'circle-stroke-color': '#0f172a',
+          'circle-opacity': 0.95,
+        },
+      });
+
+      // --- 3. Other Points (Strikes / Recon) ---
+      map.addSource('kml-other-points-source', {
+        type: 'geojson',
+        data: { type: 'FeatureCollection', features: otherPoints } as any,
+        cluster: true,
+        clusterMaxZoom: 13,
+        clusterRadius: 35,
+      });
+
+      map.addLayer({
+        id: 'kml-other-unclustered-points',
+        type: 'circle',
+        source: 'kml-other-points-source',
         filter: ['!', ['has', 'point_count']],
         paint: {
           'circle-radius': [
@@ -343,7 +450,7 @@ export const MapComponent: React.FC<MapComponentProps> = ({
           'circle-color': [
             'case',
             ['has', 'color_hex'], ['get', 'color_hex'],
-            '#3b82f6'
+            '#d97706'
           ],
           'circle-stroke-width': 1.0,
           'circle-stroke-color': '#0f172a',
@@ -444,13 +551,15 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       };
 
       map.on('click', 'kml-polygons-fill', showFeaturePopup);
-      map.on('click', 'kml-unclustered-points', showFeaturePopup);
+      map.on('click', 'kml-zsu-unclustered-points', showFeaturePopup);
+      map.on('click', 'kml-ru-unclustered-points', showFeaturePopup);
+      map.on('click', 'kml-other-unclustered-points', showFeaturePopup);
 
-      // Cluster click -> zoom in to expand
-      map.on('click', 'kml-clusters-circle', (e) => {
-        const feats = map.queryRenderedFeatures(e.point, { layers: ['kml-clusters-circle'] });
+      // ZSU Cluster click -> zoom in to expand
+      map.on('click', 'kml-zsu-clusters-circle', (e) => {
+        const feats = map.queryRenderedFeatures(e.point, { layers: ['kml-zsu-clusters-circle'] });
         const clusterId = feats[0]?.properties?.cluster_id;
-        const source: any = map.getSource('kml-points-source');
+        const source: any = map.getSource('kml-zsu-points-source');
         if (source && clusterId !== undefined) {
           source.getClusterExpansionZoom(clusterId, (err: any, zoom: number) => {
             if (err) return;
@@ -462,23 +571,38 @@ export const MapComponent: React.FC<MapComponentProps> = ({
         }
       });
 
-      map.on('mouseenter', 'kml-polygons-fill', () => {
-        map.getCanvas().style.cursor = 'pointer';
+      // RU Cluster click -> zoom in to expand
+      map.on('click', 'kml-ru-clusters-circle', (e) => {
+        const feats = map.queryRenderedFeatures(e.point, { layers: ['kml-ru-clusters-circle'] });
+        const clusterId = feats[0]?.properties?.cluster_id;
+        const source: any = map.getSource('kml-ru-points-source');
+        if (source && clusterId !== undefined) {
+          source.getClusterExpansionZoom(clusterId, (err: any, zoom: number) => {
+            if (err) return;
+            map.easeTo({
+              center: (feats[0].geometry as any).coordinates,
+              zoom: Math.min(zoom, 15),
+            });
+          });
+        }
       });
-      map.on('mouseleave', 'kml-polygons-fill', () => {
-        map.getCanvas().style.cursor = '';
-      });
-      map.on('mouseenter', 'kml-clusters-circle', () => {
-        map.getCanvas().style.cursor = 'pointer';
-      });
-      map.on('mouseleave', 'kml-clusters-circle', () => {
-        map.getCanvas().style.cursor = '';
-      });
-      map.on('mouseenter', 'kml-unclustered-points', () => {
-        map.getCanvas().style.cursor = 'pointer';
-      });
-      map.on('mouseleave', 'kml-unclustered-points', () => {
-        map.getCanvas().style.cursor = '';
+
+      const interactivePointLayers = [
+        'kml-polygons-fill',
+        'kml-zsu-clusters-circle',
+        'kml-zsu-unclustered-points',
+        'kml-ru-clusters-circle',
+        'kml-ru-unclustered-points',
+        'kml-other-unclustered-points',
+      ];
+
+      interactivePointLayers.forEach((layerId) => {
+        map.on('mouseenter', layerId, () => {
+          map.getCanvas().style.cursor = 'pointer';
+        });
+        map.on('mouseleave', layerId, () => {
+          map.getCanvas().style.cursor = '';
+        });
       });
 
       setMapLoaded(true);
@@ -513,12 +637,28 @@ export const MapComponent: React.FC<MapComponentProps> = ({
     if (source) {
       source.setData(features as any);
     }
-    const pointsSource = map.getSource('kml-points-source') as maplibregl.GeoJSONSource;
-    if (pointsSource) {
-      pointsSource.setData({
-        type: 'FeatureCollection',
-        features: (features?.features || []).filter((f) => f.geometry?.type === 'Point'),
-      } as any);
+
+    const zsuPoints = (features?.features || []).filter(
+      (f) => f.geometry?.type === 'Point' && (f.properties?.side === 'zsu' || f.properties?.color_hex === '#3b82f6')
+    );
+    const ruPoints = (features?.features || []).filter(
+      (f) => f.geometry?.type === 'Point' && (f.properties?.side === 'ru' || f.properties?.color_hex === '#ef4444' || f.properties?.color_hex === '#b83a3a')
+    );
+    const otherPoints = (features?.features || []).filter(
+      (f) => f.geometry?.type === 'Point' && f.properties?.side !== 'zsu' && f.properties?.side !== 'ru' && f.properties?.color_hex !== '#3b82f6' && f.properties?.color_hex !== '#ef4444' && f.properties?.color_hex !== '#b83a3a'
+    );
+
+    const zsuSource = map.getSource('kml-zsu-points-source') as maplibregl.GeoJSONSource;
+    if (zsuSource) {
+      zsuSource.setData({ type: 'FeatureCollection', features: zsuPoints } as any);
+    }
+    const ruSource = map.getSource('kml-ru-points-source') as maplibregl.GeoJSONSource;
+    if (ruSource) {
+      ruSource.setData({ type: 'FeatureCollection', features: ruPoints } as any);
+    }
+    const otherSource = map.getSource('kml-other-points-source') as maplibregl.GeoJSONSource;
+    if (otherSource) {
+      otherSource.setData({ type: 'FeatureCollection', features: otherPoints } as any);
     }
   }, [features, mapLoaded]);
 
@@ -544,18 +684,26 @@ export const MapComponent: React.FC<MapComponentProps> = ({
       }
     }
 
-    if (map.getLayer('kml-unclustered-points')) {
+    const pointLayers = [
+      'kml-zsu-clusters-circle',
+      'kml-zsu-cluster-count',
+      'kml-zsu-unclustered-points',
+      'kml-ru-clusters-circle',
+      'kml-ru-cluster-count',
+      'kml-ru-unclustered-points',
+      'kml-other-unclustered-points',
+    ];
+
+    if (map.getLayer('kml-zsu-unclustered-points')) {
       if (activeFolders.length === 0) {
-        map.setLayoutProperty('kml-clusters-circle', 'visibility', 'none');
-        map.setLayoutProperty('kml-cluster-count', 'visibility', 'none');
-        map.setLayoutProperty('kml-unclustered-points', 'visibility', 'none');
+        pointLayers.forEach((l) => map.setLayoutProperty(l, 'visibility', 'none'));
       } else {
-        map.setLayoutProperty('kml-clusters-circle', 'visibility', 'visible');
-        map.setLayoutProperty('kml-cluster-count', 'visibility', 'visible');
-        map.setLayoutProperty('kml-unclustered-points', 'visibility', 'visible');
+        pointLayers.forEach((l) => map.setLayoutProperty(l, 'visibility', 'visible'));
 
         const filterExp: any = ['match', ['get', 'folder'], activeFolders, true, false];
-        map.setFilter('kml-unclustered-points', ['all', ['!', ['has', 'point_count']], filterExp]);
+        map.setFilter('kml-zsu-unclustered-points', ['all', ['!', ['has', 'point_count']], filterExp]);
+        map.setFilter('kml-ru-unclustered-points', ['all', ['!', ['has', 'point_count']], filterExp]);
+        map.setFilter('kml-other-unclustered-points', ['all', ['!', ['has', 'point_count']], filterExp]);
       }
     }
 
